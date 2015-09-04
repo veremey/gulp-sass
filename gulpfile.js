@@ -13,6 +13,7 @@ var gulp = require('gulp'),
     pngquant = require('imagemin-pngquant'),
     rimraf = require('rimraf'),
     browserSync = require("browser-sync"),
+    plumber = require('gulp-plumber'),
     reload = browserSync.reload;
 
 var path = {
@@ -74,6 +75,7 @@ gulp.task('clean', function (cb) {
 
 gulp.task('html:build', function () {
     gulp.src(path.src.html) 
+        .pipe(plumber())
         .pipe(rigger())
         .pipe(gulp.dest(path.build.html))
         .pipe(reload({stream: true}));
@@ -81,6 +83,7 @@ gulp.task('html:build', function () {
 
 gulp.task('js:build', function () {
     gulp.src(path.src.js) 
+        .pipe(plumber())
         .pipe(rigger())
         .pipe(gulp.dest(path.build.js))
         .pipe(reload({stream: true}));
@@ -88,6 +91,7 @@ gulp.task('js:build', function () {
 
 gulp.task('sass:build', function () {
     gulp.src(path.src.sass) 
+        .pipe(plumber())
         .pipe(sourcemaps.init())
         .pipe(sass({
             includePaths: ['src/sass/'],
@@ -100,7 +104,19 @@ gulp.task('sass:build', function () {
             browsers: ['> 1%', 'last 3 versions', 'Opera 12.1', 'IE 9', 'IE 10'],
             cascade: false
         }))
-        .pipe(cssmin())
+        .pipe(cssmin({
+            //https://github.com/jakubpawlowicz/clean-css/issues/654
+            compatibility: 'ie7,' +
+            '-units.ch,' +
+            '-units.in,' +
+            '-units.pc,' +
+            '-units.pt,' +
+            '-units.rem,' +
+            '-units.vh,' +
+            '-units.vm,' +
+            '-units.vmax,' +
+            '-units.vmin'
+        }))
         .pipe(sourcemaps.write())
         .pipe(gulp.dest(path.build.css))
         .pipe(reload({stream: true}));
@@ -109,6 +125,7 @@ gulp.task('sass:build', function () {
 gulp.task('sprite:build', function() {
     var spriteData = 
         gulp.src(path.src.icons)
+            .pipe(plumber())
             .pipe(spritesmith({
                 imgName: 'sprite.png',
                 cssName: '_sprite.sass',
@@ -126,6 +143,7 @@ gulp.task('sprite:build', function() {
 
 gulp.task('image:build', function () {
     gulp.src(path.src.img) 
+        .pipe(plumber())
         // .pipe(imagemin({
         //     progressive: true,
         //     svgoPlugins: [{removeViewBox: false}],
@@ -137,12 +155,14 @@ gulp.task('image:build', function () {
 });
 gulp.task('svg:build', function () {
     gulp.src(path.src.svg) 
+        .pipe(plumber())
         .pipe(gulp.dest(path.build.svg));
         // .pipe(reload({stream: true}));
 });
 
 gulp.task('fonts:build', function() {
     gulp.src(path.src.fonts)
+        .pipe(plumber())
         .pipe(gulp.dest(path.build.fonts))
 });
 
